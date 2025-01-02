@@ -57,34 +57,51 @@ struct CartView: View {
                                 .foregroundColor(Color("CustomBlack"))
                         }
                         .padding(10)
-                  
-               
+                        .swipeActions (edge: .trailing){
+                            Button(role: .destructive) {
+                                cart.removeProductComplete(product: item)
+                            } label : {
+                                Label("Supprimer", systemImage: "trash")
+                            }
+                            Button {
+                                cart.removeFromCart(product: item)
+                            } label : {
+                                Label("Réduire", systemImage: "minus.circle")
+                            }
+                            .tint(.orange)
+                            
+                            
+                        }
+                        
                     }
+                   
                 }
                 .listStyle(PlainListStyle())
                 .padding(.horizontal)
             }
-            Button(action: {
-                showAlert = true
-            }) {
-                HStack{
-                    Text("Commander - Total : $\(String(format: "%.2f", cart.totalPrice()))")
-                        .font(.headline)
-                        .foregroundStyle(Color("CustomGreen"))
-                        
-                        
-                    Image("Delivery van")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 30, height: 30)
+            if !cart.items.isEmpty {
+                Button(action: {
+                    showAlert = true
+                }) {
+                    HStack{
+                        Text("Commander - Total : $\(String(format: "%.2f", cart.totalPrice()))")
+                            .font(.headline)
+                            .foregroundStyle(Color("CustomGreen"))
+                            
+                            
+                        Image("Delivery van")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 30, height: 30)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color("CustomYellow"))
+                    .cornerRadius(10)
+                    .padding()
                 }
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(Color("CustomYellow"))
-                .cornerRadius(10)
-                .padding()
             }
-        }
+            }
         .navigationBarTitle("Mon panier")
         .alert(isPresented: $showAlert) {
             Alert(title: Text("Commande effectuée"), message: Text("Votre commande est en cours de préparation."))
@@ -92,8 +109,14 @@ struct CartView: View {
         
         
     }
+    private func deleteItem(offsets: IndexSet) {
+        for index in offsets {
+            let item = cart.items[index]
+            cart.removeFromCart(product: item)
+        }
+        
+    }
 }
-
 
 
 

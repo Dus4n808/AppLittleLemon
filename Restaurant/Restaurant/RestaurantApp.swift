@@ -14,9 +14,10 @@ struct RestaurantApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(UserData())
+              //  .environmentObject(UserData())
                 .environmentObject(ProductViewModel())
                 .environmentObject(Cart())
+                .modelContainer(for: UserData.self)
         }
     }
 }

@@ -6,10 +6,16 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct LoginPage: View {
-    @EnvironmentObject var userData: UserData
+    @Query var userData: [UserData]
+    @Environment(\.modelContext) private var modelContext
     @State private var errorMessage: String?
+    @State private var firstName: String = ""
+    @State private var lastName: String = ""
+    @State private var email: String = ""
+    @State private var password: String = ""
     
     var body: some View {
         VStack (spacing: 0){
@@ -30,14 +36,14 @@ struct LoginPage: View {
                         .foregroundStyle(Color("CustomGreen"))
                         .multilineTextAlignment(.center)
                     
-                    TextField("Prénom", text: $userData.firstName)
+                    TextField("Prénom", text: $firstName)
                         .padding()
                         .background(Color(.systemGray6))
                         .cornerRadius(10)
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
                         .padding()
-                    TextField("Nom", text: $userData.lastName)
+                    TextField("Nom", text: $lastName)
                         .padding()
                         .background(Color(.systemGray6))
                         .cornerRadius(10)
@@ -45,7 +51,7 @@ struct LoginPage: View {
                         .disableAutocorrection(true)
                         .padding()
                     
-                    TextField("Email", text: $userData.email)
+                    TextField("Email", text: $email)
                         .padding()
                         .background(Color(.systemGray6))
                         .cornerRadius(10)
@@ -53,7 +59,7 @@ struct LoginPage: View {
                         .disableAutocorrection(true)
                         .keyboardType(.emailAddress)
                         .padding()
-                    SecureField("Mot de passe", text: $userData.password)
+                    SecureField("Mot de passe", text: $password)
                         .padding()
                         .background(Color(.systemGray6))
                         .cornerRadius(10)
@@ -78,7 +84,7 @@ struct LoginPage: View {
                             .cornerRadius(10)
                             .padding()
                     }
-                    .disabled(userData.email.isEmpty || userData.password.isEmpty)
+                    .disabled(email.isEmpty || password.isEmpty)
                     
                     
                 }
@@ -90,17 +96,35 @@ struct LoginPage: View {
     }
     
     private func signUp() {
-        if userData.firstName.isEmpty || userData.lastName.isEmpty || userData.email.isEmpty || userData.password.isEmpty {
-            errorMessage = "Veuillez remplir tous les champs"
-        } else if !userData.email.contains("@") {
-            errorMessage = "Veuillez entrer une adresse email valide"
-        } else if userData.password.count < 6 {
-            errorMessage = "Le mot de passe doit contenir au moins 6 caractères"
-        } else {
-            errorMessage = nil
-            userData.isLoggedIn = true
+            // Validation des champs
+            if firstName.isEmpty || lastName.isEmpty || email.isEmpty || password.isEmpty {
+                errorMessage = "Veuillez remplir tous les champs"
+            } else if !email.contains("@") {
+                errorMessage = "Veuillez entrer une adresse email valide"
+            } else if password.count < 6 {
+                errorMessage = "Le mot de passe doit contenir au moins 6 caractères"
+            } else {
+                // Ajout ou mise à jour de l'utilisateur dans SwiftData
+                if let existingUser = userData.first {
+                    existingUser.firstName = firstName
+                    existingUser.lastName = lastName
+                    existingUser.email = email
+                    existingUser.password = password
+                    existingUser.isLoggedIn = true
+                } else {
+                    let newUser = UserData(
+                        firstName: firstName,
+                        lastName: lastName,
+                        email: email,
+                        password: password,
+                        isLoggedIn: true
+                    )
+                    modelContext.insert(newUser)
+                }
+                try? modelContext.save()
+                errorMessage = nil
+            }
         }
-    }
     
     
 }
@@ -109,5 +133,5 @@ struct LoginPage: View {
 
 #Preview {
     LoginPage()
-        .environmentObject(UserData())
+        .modelContainer(for: UserData.self)
 }

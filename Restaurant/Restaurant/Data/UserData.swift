@@ -8,10 +8,19 @@
 import Foundation
 import SwiftData
 
+@Model
 class UserData: ObservableObject {
-    @Published var firstName: String = ""
-    @Published var lastName: String = ""
-    @Published var email: String = ""
-    @Published var password: String = ""
-    @Published var isLoggedIn: Bool = false
+    var firstName: String = ""
+    var lastName: String = ""
+    var email: String = ""
+    var password: String = ""
+    var isLoggedIn: Bool = false
+
+    init(firstName: String = "", lastName: String = "", email: String = "", password: String = "", isLoggedIn: Bool = false) {
+        self.firstName = firstName
+        self.lastName = lastName
+        self.email = email
+        self.password = password
+        self.isLoggedIn = isLoggedIn
+    }
 }

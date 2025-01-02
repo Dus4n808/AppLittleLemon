@@ -7,11 +7,11 @@
 
 import SwiftUI
 
-
 class Cart: ObservableObject {
-    @Published var items: [Product] = []
-    @Published var quantities: [Product: Int] = [:]
-    
+    @Published var items: [Product] = [] // Produits dans le panier
+    @Published var quantities: [Product: Int] = [:] // Quantités par produit
+
+    // Ajouter un produit au panier
     func addToCart(product: Product) {
         if let currentQuantity = quantities[product] {
             quantities[product] = currentQuantity + 1
@@ -19,29 +19,37 @@ class Cart: ObservableObject {
             items.append(product)
             quantities[product] = 1
         }
-        objectWillChange.send()
-        
+        objectWillChange.send() // Synchronisation avec SwiftUI
     }
     
+    func quantityForProduct(product: Product) -> Int {
+          return quantities[product] ?? 0
+      }
+
+    // Réduire la quantité ou supprimer le produit si quantité = 1
     func removeFromCart(product: Product) {
         guard let currentQuantity = quantities[product], currentQuantity > 0 else { return }
         if currentQuantity == 1 {
-            items.removeAll{ $0.id == product.id }
-            quantities[product] = nil
+            removeProductComplete(product: product)
         } else {
             quantities[product] = currentQuantity - 1
         }
-        objectWillChange.send()
-        
+        objectWillChange.send() // Synchronisation avec SwiftUI
     }
-    func quantityForProduct(product: Product) -> Int {
-        return quantities[product] ?? 0
+
+    // Supprimer complètement un produit
+    func removeProductComplete(product: Product) {
+        items.removeAll { $0.id == product.id }
+        quantities[product] = nil
+        objectWillChange.send() // Synchronisation avec SwiftUI
     }
-    
+
+    // Quantité totale de produits dans le panier
     func totalQuantity() -> Int {
         return quantities.values.reduce(0, +)
     }
-    
+
+    // Prix total des produits dans le panier
     func totalPrice() -> Double {
         items.reduce(0.0) { total, item in
             let quantity = Double(quantities[item] ?? 0)
@@ -49,5 +57,4 @@ class Cart: ObservableObject {
             return total + quantity * price
         }
     }
-    
 }

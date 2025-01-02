@@ -9,12 +9,12 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    @EnvironmentObject var userData: UserData
+    @Query var userData: [UserData]
     
     
     
     var body: some View {
-        if userData.isLoggedIn {
+        if let user = userData.first, user.isLoggedIn {
             ViewMenu()
         } else {
             LoginPage()
@@ -27,5 +27,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .environmentObject(UserData())
+        .modelContainer(for: UserData.self)
 }
