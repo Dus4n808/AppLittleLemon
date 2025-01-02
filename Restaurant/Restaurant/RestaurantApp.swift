@@ -15,6 +15,8 @@ struct RestaurantApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(UserData())
+                .environmentObject(ProductViewModel())
+                .environmentObject(Cart())
         }
     }
 }

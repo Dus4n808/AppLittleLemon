@@ -15,7 +15,7 @@ struct ContentView: View {
     
     var body: some View {
         if userData.isLoggedIn {
-            Home()
+            ViewMenu()
         } else {
             LoginPage()
         }
