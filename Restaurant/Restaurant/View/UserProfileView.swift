@@ -17,12 +17,14 @@ struct UserProfile: View {
     @State private var updateEmail: String = ""
     @State private var updateFirstName: String = ""
     var body: some View {
+        
         VStack (spacing: 20){
             Text("Informations Personelles")
-                .font(.title)
+                .font(.title2)
                 .fontWeight(.bold)
                 .foregroundColor(Color("CustomGreen"))
                 .padding(.top)
+            
             Image("Profile")
                 .resizable()
                 .scaledToFill()
@@ -33,6 +35,10 @@ struct UserProfile: View {
                         .stroke(Color("CustomGreen"), lineWidth: 3)
                 )
                 .shadow(radius: 5)
+            
+            
+            
+            
             if let user = userData.first {
                 VStack(alignment: .leading, spacing: 10) {
                     if isEditing {
@@ -200,7 +206,27 @@ struct UserProfile: View {
     }
 }
 
+extension ModelContainer {
+    @MainActor static func previewContainer() -> ModelContainer {
+        let container = try! ModelContainer(for: UserData.self)
+        let context = container.mainContext
+
+        // Ajouter des données fictives
+        let mockUser = UserData(
+            firstName: "Dusan",
+            lastName: "Kostic",
+            email: "dusan@kostic.com",
+            password: "1234",
+            isLoggedIn: true
+        )
+        context.insert(mockUser)
+
+        return container
+    }
+}
+
 #Preview {
     UserProfile()
-        .modelContainer(for: UserData.self)
+        .modelContainer(.previewContainer())
 }
+

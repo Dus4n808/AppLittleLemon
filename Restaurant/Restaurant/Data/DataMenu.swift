@@ -68,10 +68,22 @@ struct Menu: Codable {
 }
 
 class ProductViewModel: ObservableObject {
-    @Published var products: [Product] = []
+    @Published var products: [Product] = [] // Tous les produits récupérés
+    @Published var filteredProducts: [Product] = [] // Produits filtrés pour la recherche
+    @Published var categories : [String] = []
+    @Published var searchText: String = "" { // Texte de recherche
+        didSet {
+            applySearchFilter()
+        }
+    }
+    @Published var selectedCategory: String? {
+        didSet {
+            applySearchFilter()
+        }
+    }
     @Published var isLoading: Bool = false
     @Published var errorMessage: String? = nil
-    
+
     func fetchProducts() {
         guard let url = URL(string: "https://raw.githubusercontent.com/Meta-Mobile-Developer-PC/Working-With-Data-API/main/menu.json") else {
             errorMessage = "Invalid URL"
@@ -79,29 +91,44 @@ class ProductViewModel: ObservableObject {
         }
         isLoading = true
         errorMessage = nil
-        
-        URLSession.shared.dataTask(with: url) {data, response, error in
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
             DispatchQueue.main.async {
                 self.isLoading = false
                 if let error {
                     self.errorMessage = "Erreur réseau: \(error.localizedDescription)"
                     return
                 }
-                
+
                 guard let data = data else {
                     self.errorMessage = "Aucune donnée reçue"
                     return
                 }
-                
+
                 do {
                     let menu = try JSONDecoder().decode(Menu.self, from: data)
                     self.products = menu.menu
+                    self.filteredProducts = self.products // Par défaut, tous les produits
+                    self.extractCategories()
+                    
                 } catch {
                     self.errorMessage = "Erreur de décodage: \(error.localizedDescription)"
                 }
             }
-            
+
         }.resume()
     }
-    
+
+    private func extractCategories()  {
+        categories = Array(Set(products.map {$0.category} )).sorted()
+    }
+
+    private func applySearchFilter() {
+        filteredProducts = products.filter { products in
+            let matchesSearch = searchText.isEmpty || products.title.lowercased().contains(searchText.lowercased())
+            let matchesCategory = selectedCategory == nil || products.category == selectedCategory
+            return matchesSearch && matchesCategory
+            
+        }
+    }
 }
